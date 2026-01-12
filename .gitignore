@@ -7,3 +7,11 @@ __pycache__/
 
 # Highscore (optional) - can be kept, but ignore for typical contributors
 highscore.json
+
+# Build outputs
+dist/
+build/
+*.spec
+distpkg/
+*.zip
+*.tar.gz

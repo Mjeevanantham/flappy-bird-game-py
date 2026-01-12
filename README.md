@@ -41,3 +41,9 @@ Web port and deployment
 -----------------------
 - A web port (HTML5 Canvas + JS) is included in `web/` (`web/index.html`, `web/game.js`, `web/styles.css`). It preserves the tutorial and friendly defaults from the Python version.
 - Deploy to Vercel by connecting the repository in https://vercel.com/new (select the `main` branch), or install the Vercel CLI and run `vercel` from the repo root. The provided `vercel.json` routes the root to `web/index.html`.
+
+Packaging & releases (Python app)
+---------------------------------
+- The Python/pygame app can be packaged and published as native artifacts. A workflow (`.github/workflows/release.yml`) builds executables using PyInstaller for Windows, Linux and macOS when you push a tag like `v1.0.0`.
+- Released artifacts will be attached to the GitHub Release and linked from `web/download.html` for convenience.
+- To create a release: tag the repo (e.g., `git tag v1.0.0 && git push origin v1.0.0`) and the CI will build and attach the artifacts automatically.
