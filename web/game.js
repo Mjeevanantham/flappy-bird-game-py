@@ -117,14 +117,33 @@ class Game {
         // bird with rotation
         ctx.save(); const vel = this.bird.vel; const angle = Math.max(Math.min(-vel * 3, 25), -90); ctx.translate(this.bird.x + BIRD_SIZE / 2, this.bird.y + BIRD_SIZE / 2); ctx.rotate(angle * Math.PI / 180); ctx.fillStyle = '#ffd700'; ctx.beginPath(); ctx.ellipse(0, 0, BIRD_SIZE / 2, BIRD_SIZE / 2, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
 
-        // UI
+        // UI - canvas drawing
         ctx.font = '28px system-ui'; ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.fillText(this.score, SCREEN_W / 2, 36);
 
-        if (!this.playing && !this.gameOver) { ctx.fillStyle = 'black'; ctx.textAlign = 'center'; ctx.fillText('Flappy - Learn JavaScript', SCREEN_W / 2, 100); if (!this.seenTutorial) ctx.fillText('First time? A short tutorial will start when you press Space', SCREEN_W / 2, 150); ctx.fillText('Press SPACE or Tap to start', SCREEN_W / 2, 190); }
-        if (this.gameOver) { ctx.fillStyle = 'black'; ctx.fillText('Game Over', SCREEN_W / 2, 100); ctx.fillText(`Score: ${this.score}  Highscore: ${this.highscore}`, SCREEN_W / 2, 150); ctx.fillText('Press R to retry', SCREEN_W / 2, 200); }
+        if (!this.playing && !this.gameOver) {
+            ctx.fillStyle = 'black'; ctx.textAlign = 'center'; ctx.fillText('Flappy - Learn JavaScript', SCREEN_W / 2, 100);
+            if (!this.seenTutorial) ctx.fillText('First time? A short tutorial will start when you press Space', SCREEN_W / 2, 150);
+            ctx.fillText('Press SPACE or Tap to start', SCREEN_W / 2, 190);
+        }
+        if (this.gameOver) {
+            ctx.fillStyle = 'black'; ctx.fillText('Game Over', SCREEN_W / 2, 100);
+            ctx.fillText(`Score: ${this.score}  Highscore: ${this.highscore}`, SCREEN_W / 2, 150);
+            ctx.fillText('Press R to retry', SCREEN_W / 2, 200);
+        }
 
         // tutorial overlay
-        if (this.tutorialMode && this.playing) { ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(30, SCREEN_H - 120, SCREEN_W - 60, 80); ctx.fillStyle = 'white'; ctx.textAlign = 'left'; ctx.fillText('Tutorial: Tap or SPACE to flap', 40, SCREEN_H - 80); ctx.fillText('Play gently — easier pipes for a short time', 40, SCREEN_H - 50); }
+        if (this.tutorialMode && this.playing) {
+            ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(30, SCREEN_H - 120, SCREEN_W - 60, 80);
+            ctx.fillStyle = 'white'; ctx.textAlign = 'left'; ctx.fillText('Tutorial: Tap or SPACE to flap', 40, SCREEN_H - 80);
+            ctx.fillText('Play gently — easier pipes for a short time', 40, SCREEN_H - 50);
+        }
+
+        // Sync DOM UI
+        try{
+            const scoreEl = document.getElementById('score'); if(scoreEl) scoreEl.textContent = String(this.score);
+            const aiEl = document.getElementById('ai-indicator'); if(aiEl){ if(this.aiActive) aiEl.classList.remove('hidden'); else aiEl.classList.add('hidden'); }
+        }catch(e){ /* ignore in non-browser environments */ }
+
     }
 
     loop(now) {
