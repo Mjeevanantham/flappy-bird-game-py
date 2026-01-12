@@ -99,4 +99,22 @@
 
         <div id="ai-fail-modal" class="modal hidden" role="dialog" aria-hidden="true">
             <div class="modal-content">
-  
+                <h3>Auto-play failed</h3>
+                <p>The AI-assisted run ended. Enter your name to record this run and optionally continue automatic play.
+                </p>
+                <input id="ai-user-name" placeholder="Your name" />
+                <textarea id="ai-feedback" placeholder="Feedback (optional)"></textarea>
+                <div class="modal-actions">
+                    <button id="ai-submit">Submit & Continue</button>
+                    <button id="ai-cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <p class="hint">Press SPACE or Tap to flap. This web port mirrors the Python project and is Vercel-ready.</p>
+        <footer>Highscore stored locally in your browser.</footer>
+    </main>
+    <script type="module" src="game.js"></script>
+</body>
+
+</html>

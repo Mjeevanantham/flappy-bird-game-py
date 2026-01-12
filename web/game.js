@@ -139,10 +139,10 @@ class Game {
         }
 
         // Sync DOM UI
-        try{
-            const scoreEl = document.getElementById('score'); if(scoreEl) scoreEl.textContent = String(this.score);
-            const aiEl = document.getElementById('ai-indicator'); if(aiEl){ if(this.aiActive) aiEl.classList.remove('hidden'); else aiEl.classList.add('hidden'); }
-        }catch(e){ /* ignore in non-browser environments */ }
+        try {
+            const scoreEl = document.getElementById('score'); if (scoreEl) scoreEl.textContent = String(this.score);
+            const aiEl = document.getElementById('ai-indicator'); if (aiEl) { if (this.aiActive) aiEl.classList.remove('hidden'); else aiEl.classList.add('hidden'); }
+        } catch (e) { /* ignore in non-browser environments */ }
 
     }
 

@@ -147,4 +147,16 @@ footer {
 
 .modal-content input,
 .modal-content textarea {
-    width: 100%
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+}
