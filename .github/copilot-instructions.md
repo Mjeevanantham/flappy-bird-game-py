@@ -48,6 +48,7 @@ Purpose: Help AI coding agents be immediately productive in this repository by d
 - `flappy/game.py` — core game loop, Bird/Pipe classes, and testable functions (e.g., `bird_hits_pipes`).
 - `tests/` — unit tests for pure logic (collision, scoring) show how to make game logic testable.
 - `.github/workflows/*` — CI config that runs `pytest` on push.
+- `web/` — HTML5 Canvas port for browser deployment; contains `web/index.html`, `web/game.js`, and `web/styles.css`. Deployable to Vercel using `vercel.json`.
 
 ### Project-specific guidance 🔧
 - Keep game logic small and testable: move pure functions (collision, scoring) out of the draw/update code so they can be unit tested.

@@ -36,3 +36,8 @@ Learning notes
 --------------
 - The graphical parts are in `flappy/game.py`, but logic like `bird_hits_pipes` is intentionally small and unit-testable.
 - Prefer modifying constants for experimentation (gravity, pipe gap, etc.)
+
+Web port and deployment
+-----------------------
+- A web port (HTML5 Canvas + JS) is included in `web/` (`web/index.html`, `web/game.js`, `web/styles.css`). It preserves the tutorial and friendly defaults from the Python version.
+- Deploy to Vercel by connecting the repository in https://vercel.com/new (select the `main` branch), or install the Vercel CLI and run `vercel` from the repo root. The provided `vercel.json` routes the root to `web/index.html`.
