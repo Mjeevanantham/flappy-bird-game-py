@@ -143,6 +143,145 @@ const game = new Game(canvas);
 
 // mute button placeholder (no sound for now)
 document.getElementById('mute').addEventListener('click', () => { alert('Audio can be added — tell me if you want SFX/music'); });
+// --- AI Auto-play feature ---
+const AI_AUTO_MS = 10000; // 10 seconds autoplay
+const AI_POLL_MS = 150; // ask AI every N ms
 
+let aiInterval = null;
+let aiEndTime = 0;
+let aiEndpointInput = null;
+let aiUsingEndpoint = false;
+
+function downloadJSON(obj, filename = 'ai-run.json'){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+
+async function queryGroqAPI(payload, endpoint){
+  // Generic POST wrapper for an AI endpoint (e.g., Groq). Expects JSON response { flap: boolean }
+  // This client does not include an API key by default; the user may provide a proxied endpoint if needed.
+  try{
+    const res = await fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
+    if(!res.ok) throw new Error('AI request failed');
+    const j = await res.json();
+    return j;
+  }catch(e){
+    console.warn('AI request failed, falling back to heuristic', e);
+    return null;
+  }
+}
+
+Game.prototype._aiDecide = async function(){
+  // Build a compact state payload for the AI
+  const nearest = this.pipes.length ? this.pipes[0] : null;
+  const state = {
+    bird: { y: this.bird.y, vel: this.bird.vel },
+    nextPipe: nearest ? { x: nearest.x, gapY: nearest.gapY } : null,
+    score: this.score,
+    tutorial: this.tutorialMode
+  };
+
+  // Determine endpoint: if 'use-proxy' checked, use /api/groq, otherwise use provided endpoint if present
+  const useProxy = !!document.getElementById('use-proxy')?.checked;
+  const endpointInput = document.getElementById('ai-endpoint')?.value?.trim();
+  const endpoint = useProxy ? '/api/groq' : (endpointInput || '');
+
+  if(endpoint){
+    const response = await queryGroqAPI(state, endpoint);
+    if(response && typeof response.flap !== 'undefined') return { flap: !!response.flap, source: 'ai' };
+  }
+
+  // Heuristic fallback: flap when bird is dropping toward the gap top or approaching a pipe
+  const gapY = nearest ? nearest.gapY : SCREEN_H / 2;
+  const distX = nearest ? nearest.x - this.bird.x : 9999;
+  const shouldFlap = (this.bird.vel > 3 && this.bird.y > gapY) || (distX < 120 && Math.abs(this.bird.y - gapY) > 20);
+  return { flap: shouldFlap, source: 'heuristic' };
+};
+
+Game.prototype.startAIAutoPlay = function(){
+  if(this.playing === false){ this.start(); }
+  if(document.getElementById('ai-stop')) document.getElementById('ai-stop').style.display = 'inline-block';
+  document.getElementById('ai-play').style.display = 'none';
+  document.getElementById('ai-indicator').classList.remove('hidden');
+  this.aiActive = true;
+  aiEndTime = performance.now() + AI_AUTO_MS;
+
+  // update countdown UI
+  const timerEl = document.getElementById('ai-timer');
+  const timerTicker = setInterval(()=>{
+    const remaining = Math.max(0, Math.ceil((aiEndTime - performance.now())/1000));
+    if(timerEl) timerEl.textContent = String(remaining);
+    if(remaining <= 0){ clearInterval(timerTicker); }
+  }, 250);
+
+  aiInterval = setInterval(async () => {
+    try{
+      if(performance.now() >= aiEndTime){ this.stopAIAutoPlay(); return; }
+      const d = await this._aiDecide();
+      if(d && d.flap){ this.bird.flap(); }
+    }catch(e){
+      console.warn('AI autoplayer error', e);
+      this.stopAIAutoPlay();
+      this._onAIFailure();
+    }
+  }, AI_POLL_MS);
+};
+
+Game.prototype.stopAIAutoPlay = function(){
+  if(aiInterval) clearInterval(aiInterval);
+  aiInterval = null;
+  this.aiActive = false;
+  if(document.getElementById('ai-stop')) document.getElementById('ai-stop').style.display = 'none';
+  if(document.getElementById('ai-play')) document.getElementById('ai-play').style.display = 'inline-block';
+};
+
+// When AI run fails (game over while aiActive), show modal to ask user for details and optionally continue
+Game.prototype._onAIFailure = function(){
+  this.stopAIAutoPlay();
+  const modal = document.getElementById('ai-fail-modal');
+  modal.classList.remove('hidden'); modal.setAttribute('aria-hidden', 'false');
+  // pre-fill name from localStorage if available
+  const stored = JSON.parse(localStorage.getItem('aiUser') || '{}');
+  if(stored && stored.name) document.getElementById('ai-user-name').value = stored.name;
+};
+
+function hideAIModal(){ const modal = document.getElementById('ai-fail-modal'); modal.classList.add('hidden'); modal.setAttribute('aria-hidden', 'true'); }
+
+document.getElementById('ai-play').addEventListener('click', ()=>{ game.startAIAutoPlay(); });
+document.getElementById('ai-stop').addEventListener('click', ()=>{ game.stopAIAutoPlay(); });
+
+// modal actions
+document.getElementById('ai-submit').addEventListener('click', async ()=>{
+  const name = document.getElementById('ai-user-name').value || 'anonymous';
+  const feedback = document.getElementById('ai-feedback').value || '';
+  const payload = { name, feedback, score: game.score, highscore: game.highscore, timestamp: new Date().toISOString(), aiActive: !!game.aiActive };
+  // save locally
+  const store = JSON.parse(localStorage.getItem('aiFailedRuns') || '[]'); store.push(payload); localStorage.setItem('aiFailedRuns', JSON.stringify(store));
+  // save user name for convenience
+  localStorage.setItem('aiUser', JSON.stringify({ name }));
+
+  // attempt to POST to server-side report endpoint (if present)
+  try{
+    await fetch('/api/report', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+  }catch(e){ console.warn('report failed', e); }
+
+  // trigger download
+  downloadJSON(payload, `ai-failed-run-${Date.now()}.json`);
+  hideAIModal();
+  // optionally resume auto-play for another duration
+  game.startAIAutoPlay();
+});
+
+document.getElementById('ai-cancel').addEventListener('click', ()=>{ hideAIModal(); });
+
+// hook into game over: when game becomes gameOver and aiActive was true, prompt
+const origUpdate = Game.prototype.update;
+Game.prototype.update = function(dt){
+  const wasPlaying = this.playing;
+  origUpdate.call(this, dt);
+  if(this.gameOver && this.aiActive){ this._onAIFailure(); }
+};
 // expose to window for debugging
 window._game = game;

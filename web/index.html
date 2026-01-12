@@ -14,10 +14,34 @@
         <div id="game-wrap">
             <canvas id="game" width="640" height="480"></canvas>
             <div id="ui">
-                <button id="mute">Mute</button>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <button id="mute">Mute</button>
+                  <label style="display:flex; gap:8px; align-items:center;">
+                    <input id="use-proxy" type="checkbox" /> Use proxy
+                  </label>
+                  <input id="ai-endpoint" placeholder="AI endpoint (optional)" style="width:260px;" />
+                  <button id="ai-play">Auto-play (AI)</button>
+                  <button id="ai-stop" style="display:none">Stop AI</button>
+                </div>
                 <div id="score">0</div>
             </div>
         </div>
+
+        <div id="ai-indicator" class="hidden">AI active <span id="ai-timer">10</span>s</div>
+
+        <div id="ai-fail-modal" class="modal hidden" role="dialog" aria-hidden="true">
+          <div class="modal-content">
+            <h3>Auto-play failed</h3>
+            <p>The AI-assisted run ended. Enter your name to record this run and optionally continue automatic play.</p>
+            <input id="ai-user-name" placeholder="Your name" />
+            <textarea id="ai-feedback" placeholder="Feedback (optional)"></textarea>
+            <div class="modal-actions">
+              <button id="ai-submit">Submit & Continue</button>
+              <button id="ai-cancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+
         <p class="hint">Press SPACE or Tap to flap. This web port mirrors the Python project and is Vercel-ready.</p>
         <footer>Highscore stored locally in your browser.</footer>
     </main>

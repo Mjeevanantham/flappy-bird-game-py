@@ -75,3 +75,13 @@ footer {
     padding: 12px;
     border-radius: 6px;
 }
+
+/* AI / modal styles */
+#ui button#ai-play, #ui button#ai-stop { margin-left: 8px; }
+#ai-endpoint { padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.1); }
+#ai-indicator { position: absolute; right: 12px; bottom: 12px; background: rgba(0,0,0,0.6); color: white; padding: 8px 10px; border-radius: 6px; }
+.modal { position: fixed; left: 0; right:0; top:0; bottom:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.4); }
+.modal.hidden { display: none; }
+.modal-content { background: white; color: #012; padding: 18px; border-radius: 8px; width: 320px; max-width: calc(100% - 40px); }
+.modal-content input, .modal-content textarea { width: 100%; margin-top: 8px; padding: 8px; border:1px solid #ddd; border-radius:4px; }
+.modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
